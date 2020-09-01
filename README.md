@@ -11,7 +11,7 @@ And given what resources you already have,
 * What will you have to find by salvage, and how much?
 * What perk unlocks this recipe?
 
-Make it a mobile-first single page Kotlin JS web app
+Make it a mobile-first single-page Kotlin/JS web app
 
 This app needs access to a copy of the crafting recipes in the game, 
 which it is not licensed to provide. 
