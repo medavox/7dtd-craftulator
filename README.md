@@ -6,9 +6,9 @@ Given you want to make a specific thing,
 And given what resources you already have,
 
 * How much of each raw material will you need to gather?
-* What intermediate products will you need to craft and where?
-* What will you have to find by salvage, and how much?
 * What station will you have to craft it at?
+* What intermediate products will you need to craft and at what station?
+* What will you have to find by salvage, and how much?
 * What perk unlocks this recipe?
 
 Make it a mobile-first single page Kotlin JS web app
