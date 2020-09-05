@@ -197,3 +197,6 @@ gradle-app.setting
 **/build/
 
 # End of https://www.toptal.com/developers/gitignore/api/linux,macos,gradle,kotlin,intellij+iml,windows
+
+#ignore generated kotlin headers for javascript libraries
+src/main/kotlin/externaljs/
