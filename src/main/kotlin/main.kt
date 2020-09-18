@@ -1,6 +1,8 @@
 import org.w3c.dom.parsing.DOMParser
 import kotlinx.browser.document
 import org.w3c.dom.*
+import org.w3c.files.File
+import org.w3c.files.FileReader
 
 /**The string is the name, the int is the total quantity needed of the thing,
  * for the requested recipe and all its intermediates*/
@@ -16,8 +18,9 @@ private val toCraft = CountingMap<String>()
  *
  * @param name the item's name, as it appears (if it does) in `recipes.xml`
  */
-fun visitItem(name:String, quantity:Int) {
-    val itemsToCraft = document.querySelectorAll("recipe[name~=$name]")
+fun Document.visitItem(name:String, quantity:Int) {
+    println("recipe[name~=$name]")
+    val itemsToCraft:NodeList = this.querySelectorAll("recipe[name~=$name]")
     if(itemsToCraft.length == 0) {//no recipes matched
         //either the search was bollocks, or the item was uncraftable
         //add it to the uncraftables
@@ -49,21 +52,52 @@ fun visitItem(name:String, quantity:Int) {
 
         }
     }
+    println("uncraftables: $uncraftables")
+    println("to craft: $toCraft")
 }
 
 fun main() {
-    document.write("Hello, world!")
-    //val foyl = js("require(\"../recipes.xml\")")
-    val nameSearch = "gyro"
-
     //todo: find the best-matching recipe out of those returned
     // probably using levenshtein distance or similar
-    val fslekt = document.getElementById("file-selector") as HTMLInputElement
+    val fslekt = document.getElementById("slekt") as HTMLInputElement
+    println("slekt: $fslekt")
+    //println("ok then fine. Wildcard search: ${document.querySelectorAll("*").asList()}")
+    fslekt.addEventListener("change", { event ->
+        val foyl:File = event.target.asDynamic().files[0] as File
 
-    lateinit var foyl:String
-    fslekt.addEventListener("change", {event ->
-        foyl = event.target.asDynamic().files[0] as String
-        println("foil: $foyl")
+        println("foil: ${foyl.name}; size: ${foyl.size}")
+        val fr = FileReader()
+        fr.readAsText(foyl)
+        fr.onload = { loadedEvent ->
+            gotRecipesXml(loadedEvent.target.asDynamic().result)
+        }
     })
-    val xmlDoc: Document = DOMParser().parseFromString(foyl, "text/xml")
+}
+
+fun gotRecipesXml(recipesXmlContents:String) {
+    //println("foil contents maybe: $fileContents")
+    val xmlDocument:Document = DOMParser().parseFromString(recipesXmlContents, "text/xml")
+    val recipesEl:NodeList = xmlDocument.querySelectorAll("recipe[name^=vehicle]")
+    val items = recipesEl.length
+    println("reikpess:"+items)
+    for( i in 0 until items) { recipesEl[i]?.let {
+        if (it is Element) {
+            println(it.asString() )
+        }
+    }}
+
+    //xmlDoc.visitItem("vehicle", 1)
+    xmlDocument.visitItem("vehicleGyrocopterPlaceable", 1)
+}
+
+private fun Element.asString():String {
+
+    return "Node \"$nodeName\"; ${this.attributes.asList().fold(""){ acc, elem ->
+        "$acc / ${elem.asString()}"
+        
+    }}"
+}
+
+private fun Attr.asString() :String {
+    return "$name=\"$value\""
 }
