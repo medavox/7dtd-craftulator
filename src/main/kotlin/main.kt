@@ -4,15 +4,17 @@ import org.w3c.dom.*
 import org.w3c.files.File
 import org.w3c.files.FileReader
 
-/**The string is the name, the int is the total quantity needed of the thing,
+/**Keeps a count of the total amounts of each uncraftable thing we need,
  * for the requested recipe and all its intermediates*/
 private val uncraftables = CountingMap<String>()
 
-/**Would be nice in future to use a data structure that indicates the order that things should be crafted in,
- * but this will do for now*/
-private val toCraft = CountingMap<String>()
+/**Keeps count of the items that need to be crafted.
+ * Their insertion order is later used (in reverse)
+ * to list the items in the order they can be crafted*/
+private val toCraft = CountingMapWithOrder<String>()
 
-/**1. Adds this item to the toCraft collection
+/**Recursively finds ALL the materials needed to make this item, including sub-assemblies.
+ * 1. Adds this item to the toCraft collection
  * 2. adds any items in its recipe that aren't found in recipes.xml to the uncraftables collection
  * 3. calls this method on any items that *were* found in recipes.xml
  *
@@ -51,8 +53,8 @@ fun Document.visitItem(name:String, quantity:Int) {
     //also consider `item.children`
     val ingredients:List<Element> = item.childNodes.asList().
         filter { it is Element && it.tagName == "ingredient" }.map { it as Element }
-    if(ingredients.isEmpty()) {//recipes with - ingredients are also uncraftable,
-        //rather than craftable without any ingredients
+    if(ingredients.isEmpty()) {//recipes with no ingredients are also uncraftable,
+        //rather than being craftable without any ingredients
         uncraftables[name] += quantity
         return
     }
@@ -82,7 +84,7 @@ fun main() {
         val fr = FileReader()
         fr.readAsText(foyl)
         fr.onload = { loadedEvent ->
-            gotRecipesXml(loadedEvent.target.asDynamic().result)
+            gotRecipesXml(loadedEvent.target.asDynamic().result as String)
         }
     })
 }
@@ -90,14 +92,14 @@ fun main() {
 fun gotRecipesXml(recipesXmlContents:String) {
     //println("foil contents maybe: $fileContents")
     val xmlDocument:Document = DOMParser().parseFromString(recipesXmlContents, "text/xml")
-    val recipesEl:NodeList = xmlDocument.querySelectorAll("recipe[name^=vehicle]")
+/*    val recipesEl:NodeList = xmlDocument.querySelectorAll("recipe[name^=vehicle]")
     val items = recipesEl.length
     println("reikpess:"+items)
     for( i in 0 until items) { recipesEl[i]?.let {
         if (it is Element) {
             println(it.asString() )
         }
-    }}
+    }}*/
 
     //xmlDoc.visitItem("vehicle", 1)
     xmlDocument.visitItem("vehicleGyrocopterPlaceable", 1)
@@ -105,7 +107,7 @@ fun gotRecipesXml(recipesXmlContents:String) {
     println("to craft: $toCraft")
 }
 
-private fun Node.asString():String {
+/*private fun Node.asString():String {
     return when(this){
         is Element -> {
             "Element \"$nodeName\"; "+this.attributes.asList().
@@ -116,7 +118,7 @@ private fun Node.asString():String {
         is Text -> "Text node \""+this.wholeText+"\""
         else -> "Node \"$nodeName\"=\"$nodeValue\""
     }
-}
+}*/
 
 private fun Attr.asString() :String {
     return "$name=\"$value\""
