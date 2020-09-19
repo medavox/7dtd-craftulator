@@ -1,11 +1,60 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
+
 <head>
-    <meta charset="UTF-8">
-    <title>7dtd-craftulator</title>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+    <meta name="description" content="7DTD-Craftulator: A standalone tool for the game 7 Days To Die. Tells you what you need to craft & gather, in order to craft a thing (a Bill of Materials)">
+    <title>7Days to Die Craftulator - a BoM generator for 7 Days to Die</title>
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.2/semantic.min.css">
+    <link rel="stylesheet" type="text/css" href="assets/css/index.css">
+    <script type="text/javascript" src="assets/lib/jquery/dist/jquery.min.js"></script>
+    <script type="text/javascript" src="assets/lib/larder/larder.js"></script>
+    <script>var redirect = location.href</script>
+    <script type="text/javascript" src="ghspa.js"></script>
+    <script>
+      $(function() {
+          if (location.href != redirect) {
+              $('#message').html('Coming at you from')
+              $('#message-detail').html(location.href)
+          } else {
+            $('#message').html('')
+            $('#message-detail').html('Still here at the index.html file')
+          }
+      })
+    </script>
+    <link rel="stylesheet" href="gh-fork-ribbon.css">
     <script src="7dtd-craftulator.js" defer></script>
 </head>
 <body>
-    <input id="slekt" type="file"/>
+<a class="github-fork-ribbon right-top" href="https://github.com/medavox/7dtd-craftulator" data-ribbon="Fork me on GitHub" title="Fork me on GitHub">Fork me on GitHub!</a>
+    <div class="pusher">
+        <div class="ui vertical masthead center aligned segment">
+
+            <div class="ui container">
+                <div class="ui large secondary menu">
+                    <div class="right item">
+                        <a class="item" href="/gh-pages-spa">Home</a>
+                        <a class="item" href="/gh-pages-spa/about">About</a>
+                        <a class="item" href="/gh-pages-spa/contact">Contact</a>
+                    </div>
+                </div>
+            </div>
+            <input id="slekt" type="file"/>
+
+        </div>
+
+        <div class="ui vertical stripe segment">
+            <div class="ui text container">
+                <h3 class="ui header">Single Page Application</h3>
+                <p> SPA is a web application or web site that fits on a single web page with the goal of providing a more fluid user experience similar to a desktop application. In a SPA, either all necessary code, HTML, JavaScript and CSS is retrieved with
+                    a single page load or the appropriate resources are dynamically loaded and added to the page as necessary, usually in response to user actions.</p>
+                <a class="ui huge yellow button" href="https://en.wikipedia.org/wiki/Single-page_application">Read More</a>
+            </div>
+        </div>
+    </div>
 </body>
+
 </html>
