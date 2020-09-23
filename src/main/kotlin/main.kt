@@ -1,6 +1,8 @@
 import org.w3c.dom.parsing.DOMParser
 import kotlinx.browser.document
+import kotlinx.browser.window
 import org.w3c.dom.*
+import org.w3c.dom.events.KeyboardEvent
 import org.w3c.files.File
 import org.w3c.files.FileReader
 
@@ -12,6 +14,10 @@ private val uncraftables = CountingMap<String>()
  * Their insertion order is later used (in reverse)
  * to list the items in the order they can be crafted*/
 private val toCraft = CountingMapWithOrder<String>()
+
+private var lastSearchKeyPressTimeout:Int=0
+
+private val search = document.getElementById("surch") as HTMLInputElement
 
 /**Recursively finds ALL the materials needed to make this item, including sub-assemblies.
  * 1. Adds this item to the toCraft collection
@@ -74,10 +80,11 @@ fun Document.visitItem(name:String, quantity:Int) {
 fun main() {
     //todo: find the best-matching recipe out of those returned
     // probably using levenshtein distance or similar
-    val fslekt = document.getElementById("slekt") as HTMLInputElement
-    println("slekt: $fslekt")
+    val recipesFileInput = document.getElementById("recipes_file_input") as HTMLInputElement
+    println("slekt: $recipesFileInput")
     //println("ok then fine. Wildcard search: ${document.querySelectorAll("*").asList()}")
-    fslekt.addEventListener("change", { event ->
+    //recipesFileInput.onchange = { event ->
+    recipesFileInput.addEventListener("change", { event ->
         val foyl:File = event.target.asDynamic().files[0] as File
 
         println("foil: ${foyl.name}; size: ${foyl.size}")
@@ -87,6 +94,17 @@ fun main() {
             gotRecipesXml(loadedEvent.target.asDynamic().result as String)
         }
     })
+
+    search.onkeyup = {
+        window.clearTimeout(lastSearchKeyPressTimeout)
+        lastSearchKeyPressTimeout = window.setTimeout(::searchKeyInput, 150, it)
+        Unit
+    }
+}
+
+fun searchKeyInput(ke:KeyboardEvent) {
+    println("search value:"+search.value)
+
 }
 
 fun gotRecipesXml(recipesXmlContents:String) {
@@ -118,8 +136,8 @@ fun gotRecipesXml(recipesXmlContents:String) {
         is Text -> "Text node \""+this.wholeText+"\""
         else -> "Node \"$nodeName\"=\"$nodeValue\""
     }
-}*/
+}
 
 private fun Attr.asString() :String {
     return "$name=\"$value\""
-}
+}*/
