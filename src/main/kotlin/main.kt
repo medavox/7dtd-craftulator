@@ -5,6 +5,7 @@ import org.w3c.dom.*
 import org.w3c.dom.events.KeyboardEvent
 import org.w3c.files.File
 import org.w3c.files.FileReader
+import kotlin.math.min
 
 /**Keeps a count of the total amounts of each uncraftable thing we need,
  * for the requested recipe and all its intermediates*/
@@ -18,6 +19,8 @@ private val toCraft = CountingMapWithOrder<String>()
 private var lastSearchKeyPressTimeout:Int=0
 
 private val search = document.getElementById("surch") as HTMLInputElement
+
+private var xmlDoc:Document? = null
 
 /**Recursively finds ALL the materials needed to make this item, including sub-assemblies.
  * 1. Adds this item to the toCraft collection
@@ -103,13 +106,45 @@ fun main() {
 }
 
 fun searchKeyInput(ke:KeyboardEvent) {
-    println("search value:"+search.value)
+    if(search.value.length > 1) {
+        println("search value:"+search.value)
+        val sugs = document.getElementById("suggestions") as HTMLDataListElement
+        if(sugs.hasChildNodes()) {
+            for(child in sugs.children.asList()) {
+                child.remove()
+            }
+        }
+        xmlDoc.let { xml ->
+            println("xml doc: ${xml}")
+            if(xml != null) {
+                //val selector = "recipe[name~=vehicleGyrocopterPlaceable]"
+                //val selector = "recipe[name~=${search.value}]"
+                //println("selector: $selector")
+                //val recipeCandidates:NodeList = it.querySelectorAll(selector)
+                val cands = xml.getElementsByTagName("recipe").asList().filter { el ->
+                    el.attributes["name"]?.value?.contains(search.value) ?: false
+                }
+                print("candidates: ")
+                cands.forEach { println(it.asString()) }
+                var i = 0
+                while(i < min(5, cands.size)) {
+                    val recipe = cands[i].getAttribute("name")
+                    recipe?.let {recie ->
+                        sugs.appendChild(Option(recie, recie))
+                        i++
+                    }
+                }
 
+
+            }
+        }
+    }
 }
 
 fun gotRecipesXml(recipesXmlContents:String) {
     //println("foil contents maybe: $fileContents")
-    val xmlDocument:Document = DOMParser().parseFromString(recipesXmlContents, "text/xml")
+    document.getElementById("recipes-warning")//todo:hide it
+    xmlDoc = DOMParser().parseFromString(recipesXmlContents, "text/xml")
 /*    val recipesEl:NodeList = xmlDocument.querySelectorAll("recipe[name^=vehicle]")
     val items = recipesEl.length
     println("reikpess:"+items)
@@ -120,12 +155,11 @@ fun gotRecipesXml(recipesXmlContents:String) {
     }}*/
 
     //xmlDoc.visitItem("vehicle", 1)
-    xmlDocument.visitItem("vehicleGyrocopterPlaceable", 1)
     println("uncraftables: $uncraftables")
     println("to craft: $toCraft")
 }
 
-/*private fun Node.asString():String {
+private fun Node.asString():String {
     return when(this){
         is Element -> {
             "Element \"$nodeName\"; "+this.attributes.asList().
@@ -140,4 +174,4 @@ fun gotRecipesXml(recipesXmlContents:String) {
 
 private fun Attr.asString() :String {
     return "$name=\"$value\""
-}*/
+}

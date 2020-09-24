@@ -15,6 +15,9 @@
 </head>
     <body>
         <input id="recipes_file_input" type="file"/>
-        <input type="text" id="surch" placeholder="What do you want to craft?">
+        <input list="suggestions" id="surch" placeholder="What do you want to craft?">
+        <datalist id="suggestions">
+        </datalist>
+        <p id="recipes-warning">please provide a valid recipes.xml file.</p>
     </body>
 </html>
