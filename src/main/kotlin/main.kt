@@ -97,7 +97,11 @@ fun main() {
         val fr = FileReader()
         fr.readAsText(foyl)
         fr.onload = { loadedEvent ->
-            gotRecipesXml(loadedEvent.target.asDynamic().result as String)
+            xmlDoc = DOMParser().parseFromString(loadedEvent.target.asDynamic().result as String,
+                    "text/xml")
+            //xmlDoc.visitItem("vehicle", 1)
+            search.removeAttribute("disabled")
+            search.setAttribute("placeholder", "what would you like to craft?")
         }
     })
 
@@ -138,24 +142,6 @@ fun searchKeyInput(ke:KeyboardEvent) {
             }
         }
     }
-}
-
-fun gotRecipesXml(recipesXmlContents:String) {
-    //println("foil contents maybe: $fileContents")
-    document.getElementById("recipes-warning")//todo:hide it
-    xmlDoc = DOMParser().parseFromString(recipesXmlContents, "text/xml")
-/*    val recipesEl:NodeList = xmlDocument.querySelectorAll("recipe[name^=vehicle]")
-    val items = recipesEl.length
-    println("reikpess:"+items)
-    for( i in 0 until items) { recipesEl[i]?.let {
-        if (it is Element) {
-            println(it.asString() )
-        }
-    }}*/
-
-    //xmlDoc.visitItem("vehicle", 1)
-    println("uncraftables: $uncraftables")
-    println("to craft: $toCraft")
 }
 
 private fun Node.asString():String {
