@@ -1,9 +1,7 @@
 import org.w3c.dom.parsing.DOMParser
 import kotlinx.browser.document
 import kotlinx.browser.window
-import kotlinx.dom.appendElement
-import kotlinx.dom.appendText
-import kotlinx.dom.clear
+import kotlinx.dom.*
 import org.w3c.dom.*
 import org.w3c.dom.events.KeyboardEvent
 import org.w3c.files.File
@@ -116,6 +114,7 @@ fun searchKeyInput(ke:KeyboardEvent) {
     if(search.value.length > 1) {
         println("search value:"+search.value)
         val sugs = document.getElementById("suggestions") as HTMLDivElement
+        sugs.addClass("vizzibull")
         if(sugs.hasChildNodes()) {
             sugs.clear()
         }
@@ -134,6 +133,7 @@ fun searchKeyInput(ke:KeyboardEvent) {
                             this.appendText(recipe)
                             this.addEventListener("click", {
                                 search.value = recipe
+                                sugs.removeClass("vizzibull")
                             })
                         }
                         i++
