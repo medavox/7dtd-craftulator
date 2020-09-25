@@ -116,21 +116,20 @@ fun searchKeyInput(ke:KeyboardEvent) {
             sugs.clear()
         }
         xmlDoc.let { xml ->
-            println("xml doc: ${xml}")
             if(xml != null) {
                 val cands = xml.getElementsByTagName("recipe").asList().filter { el ->
-                    el.attributes["name"]?.value?.contains(search.value) ?: false
+                    el.attributes["name"]?.value?.toLowerCase()?.contains(search.value.toLowerCase()) ?: false
                 }
-                print("candidates: ")
-                cands.forEach { println(it.asString()) }
+//                print("candidates: ")
+//                cands.forEach { println(it.asString()) }
                 var i = 0
-                while(i < min(5, cands.size)) {
-                    val recipe = cands[i].getAttribute("name")
-                    recipe?.let {recie ->
+                //show no more than 6 suggestions
+                while(i < min(6, cands.size)) {
+                    cands[i].getAttribute("name")?.let {recipe ->
                         sugs.appendElement("a") {
-                            this.appendText(recie)
-                            this.addEventListener("click", { event ->
-                                search.value = recie
+                            this.appendText(recipe)
+                            this.addEventListener("click", {
+                                search.value = recipe
                             })
                         }
                         i++
