@@ -15,7 +15,6 @@
     <style>
         /* The dropdown container */
         .dropdown {
-          float: left;
           overflow: hidden;
         }
 
@@ -59,12 +58,21 @@
     </style>
 </head>
     <body>
+        <p>Your <code>recipes.xml</code> file can usually be found in
+        <code><pre>C:\Program Files (86)\Steam\</pre></code>
+        </p><p>
+        Linux users are far too clever and attractive to need any help finding it,
+        </p><p>
+        and Mac users should instead sit and think about what mistakes in their life led them to become a mac user</p>
         <input id="recipes_file_input" type="file"/>
-
         <div class="dropdown">
             <input id="surch" placeholder="please provide a valid recipes.xml file first" disabled>
             <div class="dropdown-content" id="suggestions">
             </div>
         </div>
+        <p>In order to make <a id="quantity"></a> of <a id="recipeName"></a>, you will need to gather:</p>
+        <!-- todo: swanky-looking 2-column table of names and quantities-->
+        <p>And then craft the following items, in this order:</p>
+        <!-- todo: swanky-looking 3-column table of names, quantities and the workstation it's crafted at-->
     </body>
 </html>
