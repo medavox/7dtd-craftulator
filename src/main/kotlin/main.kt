@@ -1,6 +1,9 @@
 import org.w3c.dom.parsing.DOMParser
 import kotlinx.browser.document
 import kotlinx.browser.window
+import kotlinx.dom.appendElement
+import kotlinx.dom.appendText
+import kotlinx.dom.clear
 import org.w3c.dom.*
 import org.w3c.dom.events.KeyboardEvent
 import org.w3c.files.File
@@ -108,19 +111,13 @@ fun main() {
 fun searchKeyInput(ke:KeyboardEvent) {
     if(search.value.length > 1) {
         println("search value:"+search.value)
-        val sugs = document.getElementById("suggestions") as HTMLDataListElement
+        val sugs = document.getElementById("suggestions") as HTMLDivElement
         if(sugs.hasChildNodes()) {
-            for(child in sugs.children.asList()) {
-                child.remove()
-            }
+            sugs.clear()
         }
         xmlDoc.let { xml ->
             println("xml doc: ${xml}")
             if(xml != null) {
-                //val selector = "recipe[name~=vehicleGyrocopterPlaceable]"
-                //val selector = "recipe[name~=${search.value}]"
-                //println("selector: $selector")
-                //val recipeCandidates:NodeList = it.querySelectorAll(selector)
                 val cands = xml.getElementsByTagName("recipe").asList().filter { el ->
                     el.attributes["name"]?.value?.contains(search.value) ?: false
                 }
@@ -130,12 +127,15 @@ fun searchKeyInput(ke:KeyboardEvent) {
                 while(i < min(5, cands.size)) {
                     val recipe = cands[i].getAttribute("name")
                     recipe?.let {recie ->
-                        sugs.appendChild(Option(recie, recie))
+                        sugs.appendElement("a") {
+                            this.appendText(recie)
+                            this.addEventListener("click", { event ->
+                                search.value = recie
+                            })
+                        }
                         i++
                     }
                 }
-
-
             }
         }
     }
