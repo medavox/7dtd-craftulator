@@ -25,6 +25,17 @@ private var xmlDoc:Document? = null
  * 1. Adds this item to the toCraft collection
  * 2. adds any items in its recipe that aren't found in recipes.xml to the uncraftables collection
  * 3. calls this method on any items that *were* found in recipes.xml
+ *     //now for the meaty bit:
+    for each ingredient required by this recipe,
+    find that ingredient's own recipe, and its recipe's ingredients, and so on.
+    recursively find all recipes and materials needed to make the chosen recipe.
+    if any ingredient can't be found in the supplied recipes.xml,
+    then we assume it's uncraftable/obtain-only.
+    along with the obvious (like engines and electrical parts),
+    this also includes materials you mine (such as ores).
+    so we'll end up with a total list of materials to acquire,
+    and a list of things to craft from them
+    (preferably in order).
  *
  * @param name the item's name, as it appears (if it does) in `recipes.xml`
  */
@@ -46,18 +57,6 @@ fun Document.visitItem(name:String, quantity:Int) {
 
     println("ingredients needed to craft $quantity ${(item as Element).attributes["name"]?.value}:")
 
-    //now for the meaty bit:
-    //for each ingredient required by this recipe,
-    //find that ingredient's own recipe, and its recipe's ingredients, and so on.
-    //recursively find all recipes and materials needed to make the chosen recipe.
-    //if any ingredient can't be found in the supplied recipes.xml,
-    //then we assume it's uncraftable/obtain-only.
-    //along with the obvious (like engines and electrical parts),
-    //this also includes materials you mine (such as ores).
-    //so we'll end up with a total list of materials to acquire,
-    //and a list of things to craft from them
-    //(preferably in order).
-    //also consider `item.children`
     val ingredients:List<Element> = item.childNodes.asList().
         filter { it is Element && it.tagName == "ingredient" }.map { it as Element }
     if(ingredients.isEmpty()) {//recipes with no ingredients are also uncraftable,
@@ -136,7 +135,7 @@ fun main() {
             appendElement("th") {appendText("Name")}
             appendElement("th") {appendText("Quantity")}
         }
-        for(craftable in toCraft.elementsInInsertionOrder()) {
+        for(craftable in toCraft.elementsInInsertionOrder().reversed()) {
             craftablesUi.appendElement("tr") {
                 this.appendElement("td") {
                     this.appendText(craftable)
