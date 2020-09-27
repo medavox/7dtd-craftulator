@@ -16,11 +16,9 @@ private val uncraftables = CountingMap<String>()
  * Their insertion order is later used (in reverse)
  * to list the items in the order they can be crafted*/
 private val toCraft = CountingMapWithOrder<String>()
-
 private var lastSearchKeyPressTimeout:Int=0
-
 private val search = document.getElementById("surch") as HTMLInputElement
-
+private val button = document.getElementById("bouton") as HTMLButtonElement
 private var xmlDoc:Document? = null
 
 /**Recursively finds ALL the materials needed to make this item, including sub-assemblies.
@@ -47,7 +45,6 @@ fun Document.visitItem(name:String, quantity:Int) {
     val item: Node = filtered[0]
 
     println("ingredients needed to craft $quantity ${(item as Element).attributes["name"]?.value}:")
-
 
     //now for the meaty bit:
     //for each ingredient required by this recipe,
@@ -99,6 +96,7 @@ fun main() {
                     "text/xml")
             //xmlDoc.visitItem("vehicle", 1)
             search.removeAttribute("disabled")
+            button.removeAttribute("disabled")
             search.setAttribute("placeholder", "what would you like to craft?")
         }
     })
@@ -107,6 +105,48 @@ fun main() {
         window.clearTimeout(lastSearchKeyPressTimeout)
         lastSearchKeyPressTimeout = window.setTimeout(::searchKeyInput, 150, it)
         Unit
+    }
+
+    button.onclick = {
+        toCraft.clear()
+        uncraftables.clear()
+        xmlDoc?.visitItem(search.value, 1)
+        val craftablesUi = document.getElementById("craftables") as HTMLTableElement
+        val uncraftablesUi = document.getElementById("uncraftables") as HTMLTableElement
+        uncraftablesUi.clear()
+        craftablesUi.clear()
+        uncraftablesUi.appendElement("tr") {
+            //<tr><th>Name</th><th>Quantity</th></tr>
+            appendElement("th") {appendText("Name")}
+            appendElement("th") {appendText("Quantity")}
+        }
+        for(uncraftable in uncraftables.entries) {
+            uncraftablesUi.appendElement("tr") {
+                println("mouseEvent: $it")
+                this.appendElement("td") {
+                    this.appendText(uncraftable.key)
+                }
+                this.appendElement("td") {
+                    this.appendText(uncraftable.value.toString())
+                }
+            }
+        }
+        craftablesUi.appendElement("tr") {
+            //<tr><th>Name</th><th>Quantity</th></tr>
+            appendElement("th") {appendText("Name")}
+            appendElement("th") {appendText("Quantity")}
+        }
+        for(craftable in toCraft.elementsInInsertionOrder()) {
+            craftablesUi.appendElement("tr") {
+                this.appendElement("td") {
+                    this.appendText(craftable)
+                }
+                this.appendElement("td") {
+                    this.appendText(toCraft[craftable].toString())
+                }
+            }
+        }
+        (document.getElementById("results") as HTMLDivElement).addClass("vizzibull")
     }
 }
 

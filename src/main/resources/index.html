@@ -55,24 +55,53 @@
         .vizzibull {
           display: block !important;
         }
+        table {
+          border-collapse: collapse;
+          border-spacing: 0;
+          width: 100%;
+          border: 1px solid #ddd;
+        }
+
+        th, td {
+          text-align: left;
+          padding: 16px;
+        }
+
+        tr:nth-child(even) {
+          background-color: #f2f2f2;
+        }
+
+        #results {
+            display: none;
+        }
     </style>
 </head>
     <body>
         <p>Your <code>recipes.xml</code> file can usually be found in
-        <code><pre>C:\Program Files (86)\Steam\steamapps\common\7 Days To Die\Data\Config\recipes.xml</pre></code>
+        <code><pre>C:\Program Files (86)\Steam\steamapps\common\7 Days To Die\Data\Config\</pre></code>
+        (You can copy and paste this into the file picker)
         </p><p>
         Linux users are far too clever and attractive to need any help finding it,
         </p><p>
-        and Mac users should instead sit and think about what mistakes in their life led them to become a mac user</p>
+        and Mac users should instead think about what mistakes led them to become a mac user</p>
         <input id="recipes_file_input" type="file"/>
         <div class="dropdown">
-            <input id="surch" placeholder="please provide a valid recipes.xml file first" disabled>
+            <input id="surch" placeholder="please provide a valid recipes.xml file first" size="value" disabled>
             <div class="dropdown-content" id="suggestions">
             </div>
         </div>
-        <p>In order to make <a id="quantity"></a> of <a id="recipeName"></a>, you will need to gather:</p>
-        <!-- todo: swanky-looking 2-column table of names and quantities-->
-        <p>And then craft the following items, in this order:</p>
-        <!-- todo: swanky-looking 3-column table of names, quantities and the workstation it's crafted at-->
+        <button id="bouton" type="button" disabled>Generate BoM</button>
+        <div id="results">
+            <p>In order to make <a id="quantity"></a> of <a id="recipeName"></a>, you will need to gather:</p>
+            <div style="overflow-x:auto;">
+                <table id="uncraftables">
+                </table>
+            </div>
+            <p>And then craft the following items, in this order:</p>
+            <div style="overflow-x:auto;">
+                <table id="craftables">
+                </table>
+            </div>
+        </div>
     </body>
 </html>
