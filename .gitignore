@@ -200,3 +200,6 @@ gradle-app.setting
 
 #ignore generated kotlin headers for javascript libraries
 src/main/kotlin/externaljs/
+
+#7 days to day crafting recipes file. Should not commit, as is part of the game
+recipes.xml

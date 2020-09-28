@@ -16,7 +16,11 @@ dependencies {
 
 kotlin {
     js {
-        browser { }
+        browser {
+            distribution {
+                directory = file("$projectDir/docs/")
+            }
+        }
         binaries.executable()
     }
 }
