@@ -14,14 +14,16 @@ And given what resources you already have,
 This is a Kotlin/JS single-page web app.
 
 This app needs access to a copy of the crafting recipes in the game, 
-which it is not licensed to provide. 
-
-Please upload your `recipes.xml` file from your 7dtd installation. 
-This is usually found in C:\Program Files (x86)\Steam\steamapps\common\7 Days To Die\Data\Config\
-
+which it is not licensed to provide.
 
 # Contributions Welcome
 
 I am a Java/Kotlin/Android developer; I don't do HTML good.
 
 The UI is just made of normal HTML+CSS; if you can make it prettier, please (**please**) submit a pull request with improved styling. 
+
+# TODO
+
+* account for quantity reductions from perks
+* allow users to specify quantity of the item they want to craft
+* list crafting station used
