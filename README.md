@@ -1,5 +1,5 @@
 # 7dtd-craftulator
-Web app to generate a Bill of Materials for a craftable thing in 7 Days To .
+Web app to generate a Bill of Materials for a craftable thing in 7 Days To Die.
 
 Given you want to make a specific thing,
 
@@ -27,3 +27,8 @@ The UI is just made of normal HTML+CSS; if you can make it prettier, please (**p
 * account for quantity reductions from perks
 * allow users to specify quantity of the item they want to craft
 * list crafting station used
+* Allow user to subtract what they already have, from what needs crafting or gathering
+    - tick off (or partially tick off) already-obtained items
+    -  I need 4 wheels? well I've already got 2
+* better UI: expandable tree, regedit-style
+* Consider wood for the crafting stations that require it: campfires: furnaces
