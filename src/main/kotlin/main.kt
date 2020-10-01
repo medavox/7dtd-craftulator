@@ -4,6 +4,7 @@ import kotlinx.browser.window
 import kotlinx.dom.*
 import org.w3c.dom.*
 import org.w3c.dom.events.KeyboardEvent
+import org.w3c.dom.events.MouseEvent
 import org.w3c.files.File
 import org.w3c.files.FileReader
 import kotlin.math.min
@@ -19,7 +20,7 @@ private val toCraft = CountingMapWithOrder<String>()
 private var lastSearchKeyPressTimeout:Int=0
 private val search = document.getElementById("surch") as HTMLInputElement
 private val button = document.getElementById("bouton") as HTMLButtonElement
-private var xmlDoc:Document? = null
+private var recipesXmlDoc:Document? = null
 
 /**Recursively finds ALL the materials needed to make this item, including sub-assemblies.
  * 1. Adds this item to the toCraft collection
@@ -39,10 +40,10 @@ private var xmlDoc:Document? = null
  *
  * @param name the item's name, as it appears (if it does) in `recipes.xml`
  */
-fun Document.visitItem(name:String, quantity:Int) {
+fun Document.recordIngredientsFor(name:String, quantity:Int) {
     val recipeCandidates:NodeList = this.querySelectorAll("recipe[name~=$name]")
     if(recipeCandidates.length == 0) {//no recipes matched
-        //either the search is bollocks, or the item IS uncraftable
+        //either the entered search term is bad, or the item IS uncraftable
         //add it to the uncraftables
 
         uncraftables[name] += quantity
@@ -71,7 +72,7 @@ fun Document.visitItem(name:String, quantity:Int) {
         //get ingredient name and count needed
     }
     for (ingredient in ingredients) {
-        this.visitItem(ingredient.attributes["name"]!!.value,
+        this.recordIngredientsFor(ingredient.attributes["name"]!!.value,
                 ingredient.attributes["count"]!!.value.toInt() * quantity)
     }
 
@@ -82,8 +83,9 @@ fun main() {
     // probably using levenshtein distance or similar
     val recipesFileInput = document.getElementById("recipes_file_input") as HTMLInputElement
     println("slekt: $recipesFileInput")
-    //println("ok then fine. Wildcard search: ${document.querySelectorAll("*").asList()}")
-    //recipesFileInput.onchange = { event ->
+
+    //once the user provides a recipes.xml,
+    // load its contents and enable the rest of the page UI
     recipesFileInput.addEventListener("change", { event ->
         val foyl:File = event.target.asDynamic().files[0] as File
 
@@ -91,7 +93,7 @@ fun main() {
         val fr = FileReader()
         fr.readAsText(foyl)
         fr.onload = { loadedEvent ->
-            xmlDoc = DOMParser().parseFromString(loadedEvent.target.asDynamic().result as String,
+            recipesXmlDoc = DOMParser().parseFromString(loadedEvent.target.asDynamic().result as String,
                     "text/xml")
             //xmlDoc.visitItem("vehicle", 1)
             search.removeAttribute("disabled")
@@ -100,87 +102,94 @@ fun main() {
         }
     })
 
+    //debounces the keyboard input: only calls the function that displays the search suggestions,
+    //when 150ms have passed since the last keystroke
     search.onkeyup = {
         window.clearTimeout(lastSearchKeyPressTimeout)
         lastSearchKeyPressTimeout = window.setTimeout(::searchKeyInput, 150, it)
         Unit
     }
 
-    button.onclick = {
-        toCraft.clear()
-        uncraftables.clear()
-        xmlDoc?.visitItem(search.value, 1)
-        val craftablesUi = document.getElementById("craftables") as HTMLTableElement
-        val uncraftablesUi = document.getElementById("uncraftables") as HTMLTableElement
-        uncraftablesUi.clear()
-        craftablesUi.clear()
-        uncraftablesUi.appendElement("tr") {
-            //<tr><th>Name</th><th>Quantity</th></tr>
-            appendElement("th") {appendText("Name")}
-            appendElement("th") {appendText("Quantity")}
-        }
-        for(uncraftable in uncraftables.entries) {
-            uncraftablesUi.appendElement("tr") {
-                println("mouseEvent: $it")
-                this.appendElement("td") {
-                    this.appendText(uncraftable.key)
-                }
-                this.appendElement("td") {
-                    this.appendText(uncraftable.value.toString())
-                }
-            }
-        }
-        craftablesUi.appendElement("tr") {
-            //<tr><th>Name</th><th>Quantity</th></tr>
-            appendElement("th") {appendText("Name")}
-            appendElement("th") {appendText("Quantity")}
-        }
-        for(craftable in toCraft.elementsInInsertionOrder().reversed()) {
-            craftablesUi.appendElement("tr") {
-                this.appendElement("td") {
-                    this.appendText(craftable)
-                }
-                this.appendElement("td") {
-                    this.appendText(toCraft[craftable].toString())
-                }
-            }
-        }
-        (document.getElementById("results") as HTMLDivElement).addClass("vizzibull")
+    button.onclick = ::onSubmitPressed
+}
+
+/**called when the user presses the button to initiate the search*/
+fun onSubmitPressed(it:MouseEvent) {
+    toCraft.clear()
+    uncraftables.clear()
+    recipesXmlDoc?.recordIngredientsFor(search.value, 1)
+    val craftablesUi = document.getElementById("craftables") as HTMLTableElement
+    val uncraftablesUi = document.getElementById("uncraftables") as HTMLTableElement
+    uncraftablesUi.clear()
+    craftablesUi.clear()
+    uncraftablesUi.appendElement("tr") {
+        //<tr><th>Name</th><th>Quantity</th></tr>
+        appendElement("th") {appendText("Name")}
+        appendElement("th") {appendText("Quantity")}
     }
+    for(uncraftable in uncraftables.entries) {
+        uncraftablesUi.appendElement("tr") {
+            println("mouseEvent: $it")
+            this.appendElement("td") {
+                this.appendText(uncraftable.key)
+            }
+            this.appendElement("td") {
+                this.appendText(uncraftable.value.toString())
+            }
+        }
+    }
+    craftablesUi.appendElement("tr") {
+        //<tr><th>Name</th><th>Quantity</th></tr>
+        appendElement("th") {appendText("Name")}
+        appendElement("th") {appendText("Quantity")}
+    }
+    for(craftable in toCraft.elementsInInsertionOrder().reversed()) {
+        craftablesUi.appendElement("tr") {
+            this.appendElement("td") {
+                this.appendText(craftable)
+            }
+            this.appendElement("td") {
+                this.appendText(toCraft[craftable].toString())
+            }
+        }
+    }
+    (document.getElementById("results") as HTMLDivElement).addClass("vizzibull")
 }
 
 fun searchKeyInput(ke:KeyboardEvent) {
-    if(search.value.length > 1) {
-        println("search value:"+search.value)
-        val sugs = document.getElementById("suggestions") as HTMLDivElement
-        sugs.addClass("vizzibull")
-        if(sugs.hasChildNodes()) {
-            sugs.clear()
-        }
-        xmlDoc.let { xml ->
-            if(xml != null) {
-                val cands = xml.getElementsByTagName("recipe").asList().filter { el ->
-                    el.attributes["name"]?.value?.toLowerCase()?.contains(search.value.toLowerCase()) ?: false
-                }
-//                print("candidates: ")
-//                cands.forEach { println(it.asString()) }
-                var i = 0
-                //show no more than 6 suggestions
-                while(i < min(6, cands.size)) {
-                    cands[i].getAttribute("name")?.let {recipe ->
-                        sugs.appendElement("a") {
-                            this.appendText(recipe)
-                            this.addEventListener("click", {
-                                search.value = recipe
-                                sugs.removeClass("vizzibull")
-                            })
-                        }
-                        i++
+    if(search.value.length < 2) {
+        return
+    }
+    println("search value:"+search.value)
+    val sugs = document.getElementById("suggestions") as HTMLDivElement
+    sugs.addClass("vizzibull")
+    if(sugs.hasChildNodes()) {
+        sugs.clear()
+    }
+    recipesXmlDoc.let { xml ->
+        if(xml != null) {
+            val cands = xml.getElementsByTagName("recipe").asList().filter { el ->
+                el.attributes["name"]?.value?.toLowerCase()?.contains(search.value.toLowerCase()) ?: false
+            }
+//            print("candidates: ")
+//            cands.forEach { println(it.asString()) }
+            var i = 0
+            //show no more than 6 suggestions
+            while(i < min(6, cands.size)) {
+                cands[i].getAttribute("name")?.let {recipe ->
+                    sugs.appendElement("a") {
+                        this.appendText(recipe)
+                        this.addEventListener("click", {
+                            search.value = recipe
+                            sugs.removeClass("vizzibull")
+                        })
                     }
+                    i++
                 }
             }
         }
     }
+
 }
 
 private fun Node.asString():String {
